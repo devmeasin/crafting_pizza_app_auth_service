@@ -1,6 +1,6 @@
 ## crafting_pizza_app_auth_service
 
-### <samp>&gt; Hi there👋, I'm Mohammad Easin! 
+### <samp>&gt; Hi there👋, I'm Mohammad Easin!
 
 <!-- PROJECT LOGO -->
 <br />
@@ -11,11 +11,10 @@
 
 Add all necessary tool like ["Prettier", "ESlint", "Auto Testing", "git hook action commit before check all code using husky lint-stage" , "API Testing", "Error Handling", "logger"] || setup specially typescript project 🎉
 
-- 🎉 
-- 🚀 
+-   🎉
+-   🚀
 
-- 📫 How to reach me. =>  codereasin@gmail.com 🥚 [Coder Easin](https://codereasin.com)
-
+-   📫 How to reach me. => codereasin@gmail.com 🥚 [Coder Easin](https://codereasin.com)
 
 ## How to run
 
@@ -31,38 +30,42 @@ Please follow the below instructions to run different branches of this repositor
     ```
 3. install all npm dev dependencies
     ```sh
-    npm ci || npm i || npm install 
+    npm ci || npm i || npm install
     ```
+
 ### Dockerize your application following this command.
+
 4. create docker image using this command
     ```sh
     docker build -t auth-service:dev -f docker/dev/Dockerfile .
     ```
-    or 
+    or
     ```sh
     docker build -t auth-service:dev -f your_location/Dockerfile .
     ```
 5. Run Docker image run for window system
-    ```sh
-     docker run --rm -it -v "%cd%":/usr/src/app -v /usr/src/app/node_modules --env-file "%cd%"/.env -p 5501:5501 -e NODE_ENV=development auth-service:dev
-    ```
-    Mac or Lunix system
-    ```sh
-    docker run --rm -it -v $(pwd):/usr/src/app -v /usr/src/app/node_modules --env-file $(pwd)/.env -p 5501:5501 -e NODE_ENV=development auth-service:dev
-    ```
-after sucessfuly run your face nodemon reload isses follow this step otherwise all ok skip this part
-1. first step add this line
-[https://prnt.sc/X7smtefHsCmx](https://prnt.sc/X7smtefHsCmx)
+   `sh
+ docker run --rm -it -v "%cd%":/usr/src/app -v /usr/src/app/node_modules --env-file "%cd%"/.env -p 5501:5501 -e NODE_ENV=development auth-service:dev
+`
+   Mac or Lunix system
+   `sh
+docker run --rm -it -v $(pwd):/usr/src/app -v /usr/src/app/node_modules --env-file $(pwd)/.env -p 5501:5501 -e NODE_ENV=development auth-service:dev
+`
+   after sucessfuly run your face nodemon reload isses follow this step otherwise all ok skip this part
+6. first step add this line
+   [https://prnt.sc/X7smtefHsCmx](https://prnt.sc/X7smtefHsCmx)
 
-3. package.json file edit and just add
-[https://prnt.sc/QSyEc9Woufx3](https://prnt.sc/QSyEc9Woufx3)
-    
+7. package.json file edit and just add
+   [https://prnt.sc/QSyEc9Woufx3](https://prnt.sc/QSyEc9Woufx3)
+
 ## Authors
+
 -   [@codereasin](https://www.github.com/codereasin)
 
 <div align="center">
 
 ### 🔗 Connected to Me
+
 <div  style="display:flex; align-items: center; justify-content: center;">
     <a href="https://www.facebook.com/codereasin/">
        <img  alt="FB" width="30px" src="https://img.icons8.com/fluent/2x/facebook-new.png" />

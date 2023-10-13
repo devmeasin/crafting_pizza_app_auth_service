@@ -4,6 +4,9 @@ FROM node:18
 # Set the working directory inside the container
 WORKDIR /usr/src/app
 
+# install nodemon globally
+RUN npm install nodemon -g
+
 # Copy package.json and package-lock.json first to leverage Docker cache
 COPY package*.json ./
 
