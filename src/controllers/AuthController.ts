@@ -1,13 +1,39 @@
-import { Response } from "express";
+import { NextFunction, Response } from "express";
 import { UserService } from "./../services/UserService";
 import { RegisterUserRequest } from "../types";
+import { Logger } from "winston";
 
 export class AuthController {
-    constructor(private userService: UserService) {}
+    constructor(
+        private userService: UserService,
+        private logger: Logger,
+    ) {}
     // create new user using register
-    async register(req: RegisterUserRequest, res: Response) {
+    async register(
+        req: RegisterUserRequest,
+        res: Response,
+        next: NextFunction,
+    ) {
         const { firstName, lastName, email, password } = req.body;
-        await this.userService.create({ firstName, lastName, email, password });
-        res.status(201).json();
+        this.logger.debug("New request to register a user", {
+            firstName,
+            lastName,
+            email,
+            password: "******",
+        });
+
+        try {
+            const user = await this.userService.create({
+                firstName,
+                lastName,
+                email,
+                password,
+            });
+            this.logger.info("User has benn Register", { id: user.id });
+            res.status(201).json({ id: user });
+        } catch (err) {
+            next(err);
+            return;
+        }
     }
 }
