@@ -43,13 +43,19 @@ Please follow the below instructions to run different branches of this repositor
 5. Run Docker image run for window system
 
     ```sh
-     docker run --rm -it -v "%cd%":/usr/src/app -v /usr/src/app/node_modules --env-file "%cd%"/.env -p 5501:5501 -e NODE_ENV=development auth-service:dev
+        docker run --rm -it -v "%cd%":/usr/src/app -v /usr/src/app/node_modules --env-file "%cd%"/.env.dev -p 5501:5501 -e NODE_ENV=dev auth-service:dev
     ```
 
     Mac or Lunix system
 
     ```sh
-    docker run --rm -it -v $(pwd):/usr/src/app -v /usr/src/app/node_modules --env-file $(pwd)/.env -p 5501:5501 -e NODE_ENV=development auth-service:dev
+        docker run --rm -it -v "$(pwd)":/usr/src/app -v /usr/src/app/node_modules --env-file "$(pwd)"/.env.dev -p 5501:5501 -e NODE_ENV=dev auth-service:dev
+    ```
+
+    Run PG DB in Docker
+
+    ```sh
+        docker run --rm --name mernpg-container -e POSTGRES_USER=root -e POSTGRES_PASSWORD=root -v mernpgdata:/var/lib/postgresql/data -p 5432:5432 -d postgres
     ```
 
 After sucessfuly run your face nodemon reload isses follow this step otherwise all ok skip this part.
