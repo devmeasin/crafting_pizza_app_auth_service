@@ -32,7 +32,7 @@ describe("POST  /auth/register", () => {
                 firstName: "Mohammad",
                 lastName: "Easin",
                 email: "codereasin@gmail.com",
-                password: "pass",
+                password: "password",
             };
             // Act
             const response = await request(app)
@@ -51,7 +51,7 @@ describe("POST  /auth/register", () => {
                 firstName: "Mohammad",
                 lastName: "Easin",
                 email: "codereasin@gmail.com",
-                password: "pass",
+                password: "password",
             };
             // Act
             const response = await request(app)
@@ -72,7 +72,7 @@ describe("POST  /auth/register", () => {
                 firstName: "Mohammad",
                 lastName: "Easin",
                 email: "codereasin@gmail.com",
-                password: "pass",
+                password: "password",
             };
             // Act
             await request(app).post("/auth/register").send(userData);
@@ -93,7 +93,7 @@ describe("POST  /auth/register", () => {
                 firstName: "Mohammad",
                 lastName: "Easin",
                 email: "codereasin@gmail.com",
-                password: "pass",
+                password: "password",
             };
             // Act
             await request(app).post("/auth/register").send(userData);
@@ -103,6 +103,26 @@ describe("POST  /auth/register", () => {
             const users = await userRepository.find();
             expect(users[0]).toHaveProperty("role");
             expect(users[0].role).toBe(Roles.CUSTOMER);
+        });
+
+        test("should password not.toBe equal password in db", async () => {
+            // AAA
+            // Arrange
+            const userData = {
+                firstName: "Mohammad",
+                lastName: "Easin",
+                email: "codereasin@gmail.com",
+                password: "password",
+            };
+            // Act
+            await request(app).post("/auth/register").send(userData);
+
+            // Assart
+            const userRepository = connection.getRepository(User);
+            const users = await userRepository.find();
+            expect(users[0].password).not.toBe(userData.password);
+            expect(users[0].password).toHaveLength(60);
+            expect(users[0].password).toMatch(/^\$2b\$\d+\$/);
         });
     });
 
