@@ -11,7 +11,7 @@ RUN npm install nodemon -g
 COPY package*.json ./
 
 # Install app dependencies
-RUN npm ci
+RUN npm i
 
 # Copy the rest of our app's source code into the container
 COPY . .
