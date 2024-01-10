@@ -8,6 +8,12 @@ import { Roles } from "../constants";
 export class UserService {
     constructor(private userRepository: Repository<User>) {}
     async create({ firstName, lastName, email, password }: UserData) {
+        // check in user db
+        const user = await this.userRepository.findOne({ where: { email } });
+        if (user) {
+            const err = createHttpError(404, "Email already exists in DB!");
+            throw err;
+        }
         // passWord Has saltRound
         const saltRounds = 10;
         // password hash func here
