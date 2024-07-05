@@ -1,9 +1,9 @@
 import request from "supertest";
-import app from "../../src/app";
 import { DataSource } from "typeorm";
+import app from "../../src/app";
 import { AppDataSource } from "../../src/config/data-source";
-import { User } from "../../src/entity/User";
 import { Roles } from "../../src/constants";
+import { User } from "../../src/entity/User";
 
 describe("POST  /auth/register", () => {
     let connection: DataSource;
@@ -152,11 +152,22 @@ describe("POST  /auth/register", () => {
     });
 
     describe("fields are missing", () => {
-        test("should ", async () => {
+        test("should be return 400 status code is enail field is missing", async () => {
             // AAA
             // Arrange
+            const userData = {
+                firstName: "Mohammad",
+                lastName: "Easin",
+                email: "codereasin@gmail.com",
+                password: "password",
+            };
             // Act
+            const response = await request(app)
+                .post("/auth/register")
+                .send(userData);
+
             // Assart
+            expect(response.statusCode).toBe(201);
         });
     });
 });

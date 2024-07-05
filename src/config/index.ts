@@ -1,4 +1,7 @@
+import * as dotenv from "dotenv";
 import { config } from "dotenv";
+dotenv.config();
+
 import path from "path";
 config({ path: path.join(__dirname, `../../.env.${process.env.NODE_ENV}`) });
 
