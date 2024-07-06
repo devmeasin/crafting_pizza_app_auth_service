@@ -1,7 +1,8 @@
 import { NextFunction, Response } from "express";
-import { UserService } from "./../services/UserService";
-import { RegisterUserRequest } from "../types";
 import { Logger } from "winston";
+import { RegisterUserRequest } from "../types";
+import { UserService } from "./../services/UserService";
+import { validationResult } from "express-validator";
 
 export class AuthController {
     constructor(
@@ -14,7 +15,14 @@ export class AuthController {
         res: Response,
         next: NextFunction,
     ) {
+
+        const result = validationResult(req);
+        if (!result.isEmpty()) {
+          return res.status(400).json({ errors: result.array() });
+        }      
+
         const { firstName, lastName, email, password } = req.body;
+
         this.logger.debug("New request to register a user", {
             firstName,
             lastName,

@@ -1,9 +1,10 @@
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
+import { AppDataSource } from "../config/data-source";
+import logger from "../config/logger";
+import { User } from "../entity/User";
+import resgisterValidator from "../validator/register-validator";
 import { AuthController } from "./../controllers/AuthController";
 import { UserService } from "./../services/UserService";
-import { AppDataSource } from "../config/data-source";
-import { User } from "../entity/User";
-import logger from "../config/logger";
 
 const router = express.Router();
 
@@ -12,8 +13,8 @@ const userService = new UserService(userRepository);
 const authController = new AuthController(userService, logger);
 
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
-router.post("/register", (req, res, next) =>
-    authController.register(req, res, next),
+router.post("/register",resgisterValidator, (req : Request, res: Response, next: NextFunction) =>
+    authController.register(req, res, next)
 );
 
 export default router;

@@ -158,7 +158,7 @@ describe("POST  /auth/register", () => {
             const userData = {
                 firstName: "Mohammad",
                 lastName: "Easin",
-                email: "codereasin@gmail.com",
+                email: "",
                 password: "password",
             };
             // Act
@@ -167,7 +167,9 @@ describe("POST  /auth/register", () => {
                 .send(userData);
 
             // Assart
-            expect(response.statusCode).toBe(201);
+            expect(response.statusCode).toBe(400);
+            const users = await connection.getRepository(User).find();
+            expect(users).toHaveLength(0);
         });
     });
 });
