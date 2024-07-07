@@ -7,6 +7,9 @@ import path from "path";
 import { Logger } from "winston";
 import { RegisterUserRequest } from "../types";
 import { UserService } from "./../services/UserService";
+import { Config } from "../config";
+import { AppDataSource } from "../config/data-source";
+import { RefreshToken } from "../entity/RefreshToken";
 
 export class AuthController {
     constructor(
@@ -59,13 +62,28 @@ export class AuthController {
                 sub: user.id,
                 role: user.role,
             };
-
+            
+            // create access token
             const accessToken = sign(playload, privateKey, {
                 algorithm: "RS256",
                 expiresIn: "1h",
                 issuer: "auth-service",
             });
-            // const refreshToken = "generateRefreshToken(user)";
+
+            // presist refresh token
+            const refreshTokenRepository = AppDataSource.getRepository(RefreshToken);
+            const newRefreshToken = await refreshTokenRepository.save({
+                expiredAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365),
+                user: user
+            })
+
+            // create refresh token
+            const refreshToken = sign(playload, Config.REFRESH_TOKEN_SECRET!, {
+                algorithm: "HS256",
+                expiresIn: "1y",
+                issuer: "auth-service",
+                jwtid: String(newRefreshToken.id)
+            });
 
             res.cookie("accessToken", accessToken, {
                 domain: "localhost",
@@ -74,10 +92,13 @@ export class AuthController {
                 httpOnly: true,
                 // secure: true,
             });
-            // res.cookie("refreshToken", refreshToken, {
-            //     httpOnly: true,
-            //     secure: true,
-            // });
+
+            res.cookie("refreshToken", refreshToken, {
+                domain: "localhost",
+                sameSite: "strict",
+                maxAge: 1000 * 60 * 60 * 24 * 365, // 1y
+                httpOnly: true,
+            });
             res.status(201).json({ id: user });
         } catch (err) {
             next(err);

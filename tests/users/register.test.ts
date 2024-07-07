@@ -1,12 +1,14 @@
 import fs from "fs";
+import { verify } from "jsonwebtoken";
 import path from "path";
 import request from "supertest";
 import { DataSource } from "typeorm";
 import app from "../../src/app";
+import { Config } from "../../src/config";
 import { AppDataSource } from "../../src/config/data-source";
 import { Roles } from "../../src/constants";
+import { RefreshToken } from "../../src/entity/RefreshToken";
 import { User } from "../../src/entity/User";
-import { verify } from 'jsonwebtoken'
 
 describe("POST  /auth/register", () => {
     let connection: DataSource;
@@ -182,23 +184,56 @@ describe("POST  /auth/register", () => {
                 );
             }
 
-            const accessTokenCookie = response.headers['set-cookie'].find((cookie: string) =>
-                cookie.startsWith("accessToken="),
+            const accessTokenCookie = response.headers["set-cookie"].find(
+                (cookie: string) => cookie.startsWith("accessToken="),
             );
-            // const refreshTokenCookie = response.headers["set-cookie"].find(
-            //     (cookie: string) => cookie.startsWith("refreshToken="),
-            // );
+            const refreshTokenCookie = response.headers["set-cookie"].find(
+                (cookie: string) => cookie.startsWith("refreshToken="),
+            );
 
-            // expect(accessTokenCookie).toBeDefined();
-            // expect(refreshTokenCookie).toBeDefined();
+            expect(accessTokenCookie).toBeDefined();
+            expect(refreshTokenCookie).toBeDefined();
 
-            const accessToken:string = accessTokenCookie.split(";")[0].split("=")[1];
-            // const refreshToken = refreshTokenCookie.split(';')[0].split('=')[1];
-            // console.log(accessToken);
+            const accessToken: string = accessTokenCookie
+                .split(";")[0]
+                .split("=")[1];
+            const refreshToken: string = refreshTokenCookie
+                .split(";")[0]
+                .split("=")[1];
             const decodedAccessToken = verify(accessToken, privateKey);
-            // const decodedRefreshToken = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+            const decodedRefreshToken = verify(
+                refreshToken,
+                Config.REFRESH_TOKEN_SECRET!,
+            );
             expect(decodedAccessToken.sub).toBe(1);
-            // expect(decodedRefreshToken.userId).toBe(1);
+            expect(decodedRefreshToken.sub).toBe(1);
+        });
+
+        test("should store the refresh token in the database", async () => {
+            // Arrange
+            const userData = {
+                firstName: "Mohammad",
+                lastName: "Easin",
+                email: "codereasin@gmail.com",
+                password: "password",
+            };
+
+            // Act
+            const response = await request(app)
+                .post("/auth/register")
+                .send(userData);
+
+            // Assart
+            const refreshTokenRepo = connection.getRepository(RefreshToken);
+            const tokens = await refreshTokenRepo
+                .createQueryBuilder("refreshToken")
+                .where("refreshToken.userId = :userId", {
+                    userId: Number(response.body.id.id),
+                })
+                .getMany();
+            
+            expect(tokens).toHaveLength(1);
+            
         });
     });
 
