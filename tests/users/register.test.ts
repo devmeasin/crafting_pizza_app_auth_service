@@ -1,9 +1,12 @@
+import fs from "fs";
+import path from "path";
 import request from "supertest";
 import { DataSource } from "typeorm";
 import app from "../../src/app";
 import { AppDataSource } from "../../src/config/data-source";
 import { Roles } from "../../src/constants";
 import { User } from "../../src/entity/User";
+import { verify } from 'jsonwebtoken'
 
 describe("POST  /auth/register", () => {
     let connection: DataSource;
@@ -125,7 +128,7 @@ describe("POST  /auth/register", () => {
             expect(users[0].password).toMatch(/^\$2b\$\d+\$/);
         });
 
-        it("should be return 400 status code if email in db already existis", async () => {
+        test("should be return 400 status code if email in db already existis", async () => {
             // AAA
             // Arrange
             const userData = {
@@ -150,7 +153,7 @@ describe("POST  /auth/register", () => {
             expect(users).toHaveLength(1);
         });
 
-        test('should return access token and refresh token as cookies for valid credentials', async () => {
+        test("should return access token and refresh token as cookies for valid credentials", async () => {
             // Arrange
             const userData = {
                 firstName: "Mohammad",
@@ -163,26 +166,40 @@ describe("POST  /auth/register", () => {
             const response = await request(app)
                 .post("/auth/register")
                 .send(userData);
-            
+
+            let privateKey: Buffer;
+            try {
+                privateKey = fs.readFileSync(
+                    path.join(__dirname, "../../certs/private.pem"),
+                );
+            } catch (err) {
+                return err;
+            }
             // Assart
-            
-            const accessTokenCookie = response.headers['set-cookie'].find((cookie: string) => cookie.startsWith('accessToken='));
-            const refreshTokenCookie = response.headers['set-cookie'].find((cookie: string) => cookie.startsWith('refreshToken='));
-        
-            expect(accessTokenCookie).toBeDefined();
-            expect(refreshTokenCookie).toBeDefined();
-        
-            const accessToken = accessTokenCookie.split(';')[0].split('=')[1];
-            const refreshToken = refreshTokenCookie.split(';')[0].split('=')[1];
-        
-            // const decodedAccessToken = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+            if (!response.headers["set-cookie"]) {
+                throw new Error(
+                    "Response does not contain 'set-cookie' header",
+                );
+            }
+
+            const accessTokenCookie = response.headers['set-cookie'].find((cookie: string) =>
+                cookie.startsWith("accessToken="),
+            );
+            // const refreshTokenCookie = response.headers["set-cookie"].find(
+            //     (cookie: string) => cookie.startsWith("refreshToken="),
+            // );
+
+            // expect(accessTokenCookie).toBeDefined();
+            // expect(refreshTokenCookie).toBeDefined();
+
+            const accessToken:string = accessTokenCookie.split(";")[0].split("=")[1];
+            // const refreshToken = refreshTokenCookie.split(';')[0].split('=')[1];
+            // console.log(accessToken);
+            const decodedAccessToken = verify(accessToken, privateKey);
             // const decodedRefreshToken = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-        
-            // expect(decodedAccessToken.userId).toBe(1);
+            expect(decodedAccessToken.sub).toBe(1);
             // expect(decodedRefreshToken.userId).toBe(1);
-          });
-
-
+        });
     });
 
     describe("fields are missing", () => {

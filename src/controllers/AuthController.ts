@@ -1,5 +1,9 @@
 import { NextFunction, Response } from "express";
 import { validationResult } from "express-validator";
+import fs from "fs";
+import createHttpError from "http-errors";
+import { sign } from "jsonwebtoken";
+import path from "path";
 import { Logger } from "winston";
 import { RegisterUserRequest } from "../types";
 import { UserService } from "./../services/UserService";
@@ -38,19 +42,42 @@ export class AuthController {
             });
             this.logger.info("User has benn Register", { id: user.id });
 
-            // const accessToken = generateAccessToken(user);
-            // const refreshToken = generateRefreshToken(user);
-            const accessToken = "generateAccessToken(user)";
-            const refreshToken = "generateRefreshToken(user)";
+            let privateKey: Buffer;
+            try {
+                privateKey = fs.readFileSync(
+                    path.join(__dirname, "../../certs/private.pem"),
+                );
+            } catch (err) {
+                const error = createHttpError(
+                    500,
+                    "Error while reading private key",
+                );
+                throw error;
+            }
+
+            const playload = {
+                sub: user.id,
+                role: user.role,
+            };
+
+            const accessToken = sign(playload, privateKey, {
+                algorithm: "RS256",
+                expiresIn: "1h",
+                issuer: "auth-service",
+            });
+            // const refreshToken = "generateRefreshToken(user)";
 
             res.cookie("accessToken", accessToken, {
+                domain: "localhost",
+                sameSite: "strict",
+                maxAge: 1000 * 60 * 60, // 1h
                 httpOnly: true,
-                secure: true,
+                // secure: true,
             });
-            res.cookie("refreshToken", refreshToken, {
-                httpOnly: true,
-                secure: true,
-            });
+            // res.cookie("refreshToken", refreshToken, {
+            //     httpOnly: true,
+            //     secure: true,
+            // });
             res.status(201).json({ id: user });
         } catch (err) {
             next(err);
