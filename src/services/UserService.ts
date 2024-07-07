@@ -11,7 +11,7 @@ export class UserService {
         // check in user db
         const user = await this.userRepository.findOne({ where: { email } });
         if (user) {
-            const err = createHttpError(404, "Email already exists in DB!");
+            const err = createHttpError(400, "Email already exists in DB!");
             throw err;
         }
         // passWord Has saltRound

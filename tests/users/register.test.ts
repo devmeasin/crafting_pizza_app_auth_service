@@ -125,7 +125,7 @@ describe("POST  /auth/register", () => {
             expect(users[0].password).toMatch(/^\$2b\$\d+\$/);
         });
 
-        it("should be return 404 status code if email in db already existis", async () => {
+        it("should be return 400 status code if email in db already existis", async () => {
             // AAA
             // Arrange
             const userData = {
@@ -146,7 +146,7 @@ describe("POST  /auth/register", () => {
             const users = await userRepository.find();
 
             // Assart
-            expect(response.statusCode).toBe(404);
+            expect(response.statusCode).toBe(400);
             expect(users).toHaveLength(1);
         });
     });
@@ -170,6 +170,117 @@ describe("POST  /auth/register", () => {
             expect(response.statusCode).toBe(400);
             const users = await connection.getRepository(User).find();
             expect(users).toHaveLength(0);
+        });
+
+        test("should be return 400 status code is first name field is missing", async () => {
+            // AAA
+            // Arrange
+            const userData = {
+                firstName: "",
+                lastName: "Easin",
+                email: "codereasin@gmail.com",
+                password: "password",
+            };
+            // Act
+            const response = await request(app)
+                .post("/auth/register")
+                .send(userData);
+
+            // Assart
+            expect(response.statusCode).toBe(400);
+            // const users = await connection.getRepository(User).find();
+            expect(response.body.errors[0].msg).toEqual(
+                "First name cannot be empty",
+            );
+        });
+        test("should be return 400 status code is last name field is missing", async () => {
+            // AAA
+            // Arrange
+            const userData = {
+                firstName: "Mohammad",
+                lastName: "",
+                email: "codereasin@gmail.com",
+                password: "password",
+            };
+            // Act
+            const response = await request(app)
+                .post("/auth/register")
+                .send(userData);
+
+            // Assart
+            expect(response.statusCode).toBe(400);
+            // const users = await connection.getRepository(User).find();
+            expect(response.body.errors[0].msg).toEqual(
+                "Last name cannot be empty",
+            );
+        });
+
+        test("should be return 400 status code password is not match", async () => {
+            // AAA
+            // Arrange
+            const userData = {
+                firstName: "Mohammad",
+                lastName: "Easin",
+                email: "codereasin@gmail.com",
+                password: "passwor",
+            };
+            // Act
+            const response = await request(app)
+                .post("/auth/register")
+                .send(userData);
+
+            // Assart
+
+            expect(response.body.errors).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        msg: "password should be at least 8 chars",
+                    }),
+                ]),
+            );
+        });
+
+        test("should save hashed password correctly if all validations pass", async () => {
+            // AAA
+            // Arrange
+            const userData = {
+                firstName: "Mohammad",
+                lastName: "Easin",
+                email: "codereasin@gmail.com",
+                password: "password",
+            };
+            // Act
+            await request(app).post("/auth/register").send(userData);
+
+            const users = await connection.getRepository(User).find();
+            expect(users[0].password).not.toBe(userData.password);
+            expect(users[0].password).toHaveLength(60);
+            // Check if password is hashed with bcrypt
+            expect(users[0].password).toMatch(/^\$2b\$\d+\$/);
+        });
+
+        test("should be return 400 status code if email is not a valid email", async () => {
+            // AAA
+            // Arrange
+            const userData = {
+                firstName: "Mohammad",
+                lastName: "Easin",
+                email: "coder_*easin",
+                password: "password",
+            };
+            const userRepository = connection.getRepository(User);
+            await userRepository.save({ ...userData, role: Roles.CUSTOMER });
+            // Act
+            const response = await request(app)
+                .post("/auth/register")
+                .send(userData);
+            // Assart
+            expect(response.status).toBe(400);
+            expect(response.body.errors).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({ msg: "Email is not valid" }),
+                ]),
+            );
         });
     });
 
