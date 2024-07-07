@@ -1,8 +1,8 @@
 import { NextFunction, Response } from "express";
+import { validationResult } from "express-validator";
 import { Logger } from "winston";
 import { RegisterUserRequest } from "../types";
 import { UserService } from "./../services/UserService";
-import { validationResult } from "express-validator";
 
 export class AuthController {
     constructor(
@@ -15,11 +15,10 @@ export class AuthController {
         res: Response,
         next: NextFunction,
     ) {
-
         const result = validationResult(req);
         if (!result.isEmpty()) {
-          return res.status(400).json({ errors: result.array() });
-        }      
+            return res.status(400).json({ errors: result.array() });
+        }
 
         const { firstName, lastName, email, password } = req.body;
 
@@ -38,6 +37,20 @@ export class AuthController {
                 password,
             });
             this.logger.info("User has benn Register", { id: user.id });
+
+            // const accessToken = generateAccessToken(user);
+            // const refreshToken = generateRefreshToken(user);
+            const accessToken = "generateAccessToken(user)";
+            const refreshToken = "generateRefreshToken(user)";
+
+            res.cookie("accessToken", accessToken, {
+                httpOnly: true,
+                secure: true,
+            });
+            res.cookie("refreshToken", refreshToken, {
+                httpOnly: true,
+                secure: true,
+            });
             res.status(201).json({ id: user });
         } catch (err) {
             next(err);

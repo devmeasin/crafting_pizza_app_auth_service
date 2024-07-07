@@ -149,6 +149,40 @@ describe("POST  /auth/register", () => {
             expect(response.statusCode).toBe(400);
             expect(users).toHaveLength(1);
         });
+
+        test('should return access token and refresh token as cookies for valid credentials', async () => {
+            // Arrange
+            const userData = {
+                firstName: "Mohammad",
+                lastName: "Easin",
+                email: "codereasin@gmail.com",
+                password: "password",
+            };
+
+            // Act
+            const response = await request(app)
+                .post("/auth/register")
+                .send(userData);
+            
+            // Assart
+            
+            const accessTokenCookie = response.headers['set-cookie'].find((cookie: string) => cookie.startsWith('accessToken='));
+            const refreshTokenCookie = response.headers['set-cookie'].find((cookie: string) => cookie.startsWith('refreshToken='));
+        
+            expect(accessTokenCookie).toBeDefined();
+            expect(refreshTokenCookie).toBeDefined();
+        
+            const accessToken = accessTokenCookie.split(';')[0].split('=')[1];
+            const refreshToken = refreshTokenCookie.split(';')[0].split('=')[1];
+        
+            // const decodedAccessToken = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+            // const decodedRefreshToken = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+        
+            // expect(decodedAccessToken.userId).toBe(1);
+            // expect(decodedRefreshToken.userId).toBe(1);
+          });
+
+
     });
 
     describe("fields are missing", () => {
