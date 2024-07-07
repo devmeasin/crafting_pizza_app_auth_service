@@ -205,8 +205,8 @@ describe("POST  /auth/register", () => {
                 refreshToken,
                 Config.REFRESH_TOKEN_SECRET!,
             );
-            expect(decodedAccessToken.sub).toBe(1);
-            expect(decodedRefreshToken.sub).toBe(1);
+            expect(Number(decodedAccessToken.sub)).toBe(1);
+            expect(Number(decodedRefreshToken.sub)).toBe(1);
         });
 
         test("should store the refresh token in the database", async () => {
@@ -233,7 +233,6 @@ describe("POST  /auth/register", () => {
                 .getMany();
             
             expect(tokens).toHaveLength(1);
-            
         });
     });
 

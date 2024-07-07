@@ -1,20 +1,16 @@
 import { NextFunction, Response } from "express";
 import { validationResult } from "express-validator";
-import fs from "fs";
-import createHttpError from "http-errors";
-import { sign } from "jsonwebtoken";
-import path from "path";
+import { JwtPayload } from "jsonwebtoken";
 import { Logger } from "winston";
+import { TokenService } from "../services/TokenService";
 import { RegisterUserRequest } from "../types";
 import { UserService } from "./../services/UserService";
-import { Config } from "../config";
-import { AppDataSource } from "../config/data-source";
-import { RefreshToken } from "../entity/RefreshToken";
 
 export class AuthController {
     constructor(
         private userService: UserService,
         private logger: Logger,
+        private tokenService: TokenService,
     ) {}
     // create new user using register
     async register(
@@ -45,44 +41,20 @@ export class AuthController {
             });
             this.logger.info("User has benn Register", { id: user.id });
 
-            let privateKey: Buffer;
-            try {
-                privateKey = fs.readFileSync(
-                    path.join(__dirname, "../../certs/private.pem"),
-                );
-            } catch (err) {
-                const error = createHttpError(
-                    500,
-                    "Error while reading private key",
-                );
-                throw error;
-            }
-
-            const playload = {
-                sub: user.id,
+            const playload: JwtPayload = {
+                sub: String(user.id),
                 role: user.role,
             };
-            
-            // create access token
-            const accessToken = sign(playload, privateKey, {
-                algorithm: "RS256",
-                expiresIn: "1h",
-                issuer: "auth-service",
-            });
+
+            const accessToken = this.tokenService.generateAccessToken(playload);
 
             // presist refresh token
-            const refreshTokenRepository = AppDataSource.getRepository(RefreshToken);
-            const newRefreshToken = await refreshTokenRepository.save({
-                expiredAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365),
-                user: user
-            })
+            const newRefreshToken =
+                await this.tokenService.persistRefreshToken(user);
 
-            // create refresh token
-            const refreshToken = sign(playload, Config.REFRESH_TOKEN_SECRET!, {
-                algorithm: "HS256",
-                expiresIn: "1y",
-                issuer: "auth-service",
-                jwtid: String(newRefreshToken.id)
+            const refreshToken = this.tokenService.generateRefreshToken({
+                ...playload,
+                jwtid: newRefreshToken.id,
             });
 
             res.cookie("accessToken", accessToken, {
