@@ -1,9 +1,9 @@
-import createHttpError from "http-errors";
 import bcrypt from "bcrypt";
+import createHttpError from "http-errors";
 import { Repository } from "typeorm";
-import { UserData } from "../types";
-import { User } from "../entity/User";
 import { Roles } from "../constants";
+import { User } from "../entity/User";
+import { UserData } from "../types";
 
 export class UserService {
     constructor(private userRepository: Repository<User>) {}
@@ -34,5 +34,9 @@ export class UserService {
             );
             throw error;
         }
+    }
+
+    async findByEmail(email: string) {
+        return await this.userRepository.findOne({ where: { email } });
     }
 }

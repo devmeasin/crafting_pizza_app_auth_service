@@ -228,10 +228,10 @@ describe("POST  /auth/register", () => {
             const tokens = await refreshTokenRepo
                 .createQueryBuilder("refreshToken")
                 .where("refreshToken.userId = :userId", {
-                    userId: Number(response.body.id.id),
+                    userId: Number(response.body.id),
                 })
                 .getMany();
-            
+
             expect(tokens).toHaveLength(1);
         });
     });

@@ -7,6 +7,8 @@ import resgisterValidator from "../validator/register-validator";
 import { AuthController } from "./../controllers/AuthController";
 import { UserService } from "./../services/UserService";
 import { RefreshToken } from "../entity/RefreshToken";
+import { CredentialService } from "../services/CredentialService";
+import loginValidator from "../validator/login-validator";
 
 const router = express.Router();
 
@@ -14,11 +16,17 @@ const userRepository = AppDataSource.getRepository(User);
 const refreshTokenRepository = AppDataSource.getRepository(RefreshToken);
 const userService = new UserService(userRepository);
 const tokenService = new TokenService(refreshTokenRepository);
-const authController = new AuthController(userService, logger,tokenService);
+const credentialService = new CredentialService();
+const authController = new AuthController(userService, logger, tokenService, credentialService);
 
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
 router.post("/register",resgisterValidator, (req : Request, res: Response, next: NextFunction) =>
     authController.register(req, res, next)
+);
+
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
+router.post("/login",loginValidator, (req : Request, res: Response, next: NextFunction) =>
+    authController.login(req, res, next)
 );
 
 export default router;
