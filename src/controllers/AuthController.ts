@@ -5,7 +5,7 @@ import { JwtPayload } from "jsonwebtoken";
 import { Logger } from "winston";
 import { CredentialService } from "../services/CredentialService";
 import { TokenService } from "../services/TokenService";
-import { AuthRequest, RegisterUserRequest } from "../types";
+import { AuthRequest, RegisterUserRequest, UserData } from "../types";
 import { UserService } from "./../services/UserService";
 
 export class AuthController {
@@ -153,11 +153,23 @@ export class AuthController {
     }
 
     async self(req: AuthRequest, res: Response) {
-        const user = await this.userService.findById(req.auth.sub);
-        // if (!user) {
-        //     const err = createHttpError(404, "User not found!");
-        //     return res.status(404).json(err);
-        // }
-        return res.json(user);
+        const userData = await this.userService.findById(req.auth.sub);
+    
+        const userWithoutPassword = (userData: UserData) => {
+
+            interface UserDataX {
+                firstName: string;
+                lastName: string;
+                email: string;
+                password?: string;
+            }
+
+          const userCopy:UserDataX = { ...userData }; // CREATE A COPY OF THE OBJECT
+          if (userCopy.password) {
+            delete userCopy.password; // DELETE THE PASSWORD PROPERTY
+          }
+          return userCopy; // RETURN UPDATED USER
+        };
+        return res.json(userData && userWithoutPassword(userData));
     }
 }
