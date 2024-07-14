@@ -1,16 +1,16 @@
-import express from "express";
-import "reflect-metadata";
-import { Request, Response, NextFunction } from "express";
-import logger from "./config/logger";
+import cookieParser from 'cookie-parser';
+import express, { NextFunction, Request, Response } from "express";
 import { HttpError } from "http-errors";
+import "reflect-metadata";
+import logger from "./config/logger";
 import authRouter from "./routes/auth";
-import cookieParser from 'cookie-parser'
 
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(express.static("public"));
 
 app.get("/", (req, res) => {
     res.send("<h1>Amr Sonar Bangla 🎉</h1>");
@@ -22,7 +22,7 @@ app.use("/auth", authRouter);
 app.use((err: HttpError, req: Request, res: Response, next: NextFunction) => {
     logger.error(err.message);
 
-    const statusCode = err.statusCode || 500;
+    const statusCode = err.statusCode ||err.status || 500;
 
     res.status(statusCode).json({
         errors: [
