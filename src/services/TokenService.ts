@@ -7,7 +7,7 @@ import { User } from "../entity/User";
 import { Repository } from "typeorm";
 import { RefreshToken } from "../entity/RefreshToken";
 export class TokenService {
-    constructor(private refreshTokenRepository : Repository<RefreshToken>) {}
+    constructor(private refreshTokenRepository: Repository<RefreshToken>) {}
     generateAccessToken(payload: JwtPayload) {
         let privateKey: Buffer;
         try {
@@ -50,8 +50,7 @@ export class TokenService {
         return newRefreshToken;
     }
 
-    async deleteRefreshToken (tokenId: number) {
-       return await this.refreshTokenRepository.delete({id: tokenId});
+    async deleteRefreshToken(tokenId: number) {
+        return await this.refreshTokenRepository.delete({ id: tokenId });
     }
-
 }

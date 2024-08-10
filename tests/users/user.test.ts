@@ -11,9 +11,7 @@ describe("GET /auth/self", () => {
     let connection: DataSource;
     let jwks: ReturnType<typeof createJWKSMock>;
     beforeAll(async () => {
-        jwks = createJWKSMock(
-            "http://localhost:5501",
-        );
+        jwks = createJWKSMock("http://localhost:5501");
         connection = await AppDataSource.initialize();
     });
 
@@ -100,13 +98,13 @@ describe("GET /auth/self", () => {
                 sub: String(user.id),
                 role: user.role,
             });
-    
-            const response = await request(app).get("/auth/self").set("Cookie", [`accessToken=${accessToken};`]).send();
+
+            const response = await request(app)
+                .get("/auth/self")
+                .set("Cookie", [`accessToken=${accessToken};`])
+                .send();
             // Assart
             expect(response.body).not.toHaveProperty("password");
-        
-     } )
-
-
+        });
     });
 });

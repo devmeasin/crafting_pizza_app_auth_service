@@ -26,5 +26,5 @@ export const Config = {
     DB_PASS,
     DB_NAME,
     REFRESH_TOKEN_SECRET,
-    JWKS_URI
+    JWKS_URI,
 };
