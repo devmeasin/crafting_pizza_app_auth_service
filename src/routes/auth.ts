@@ -28,7 +28,6 @@ const authController = new AuthController(
     credentialService,
 );
 
-// eslint-disable-next-line @typescript-eslint/no-misused-promises
 router.post(
     "/register",
     resgisterValidator,
@@ -36,7 +35,6 @@ router.post(
         authController.register(req, res, next),
 );
 
-// eslint-disable-next-line @typescript-eslint/no-misused-promises
 router.post(
     "/login",
     loginValidator,
@@ -44,19 +42,17 @@ router.post(
         authController.login(req, res, next),
 );
 
-// eslint-disable-next-line @typescript-eslint/no-misused-promises
 router.get("/self", authenticate, (req: Request, res: Response) =>
     authController.self(req as AuthRequest, res),
 );
 
-// eslint-disable-next-line @typescript-eslint/no-misused-promises
 router.post(
     "/refresh",
     valiadateRefreshToken,
     (req: Request, res: Response, next: NextFunction) =>
         authController.refresh(req as AuthRequest, res, next),
 );
-// eslint-disable-next-line @typescript-eslint/no-misused-promises
+
 router.post(
     "/logout",
     authenticate,
