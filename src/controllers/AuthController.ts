@@ -44,20 +44,20 @@ export class AuthController {
             });
             this.logger.info("User has benn Register", { id: user.id });
 
-            const playload: JwtPayload = {
+            const payload: JwtPayload = {
                 sub: String(user.id),
                 role: user.role,
             };
 
-            const accessToken = this.tokenService.generateAccessToken(playload);
+            const accessToken = this.tokenService.generateAccessToken(payload);
 
             // presist refresh token
             const newRefreshToken =
                 await this.tokenService.persistRefreshToken(user);
 
             const refreshToken = this.tokenService.generateRefreshToken({
-                ...playload,
-                jwtid: newRefreshToken.id,
+                id: String(newRefreshToken.id),
+                ...payload,
             });
 
             res.cookie("accessToken", accessToken, {
@@ -95,7 +95,7 @@ export class AuthController {
             if (!user) {
                 const err = createHttpError(
                     400,
-                    "Email or password not worong!",
+                    "Email or password was worong!",
                 );
                 return next(err);
             }
@@ -109,27 +109,27 @@ export class AuthController {
             if (!isMatchPassword) {
                 const err = createHttpError(
                     400,
-                    "Email or password not worong!",
+                    "Email or password was worong!",
                 );
                 return next(err);
             }
 
             this.logger.info("User has benn Login", { id: user.id });
 
-            const playload: JwtPayload = {
+            const payload: JwtPayload = {
                 sub: String(user.id),
                 role: user.role,
             };
 
-            const accessToken = this.tokenService.generateAccessToken(playload);
+            const accessToken = this.tokenService.generateAccessToken(payload);
 
             // presist refresh token
             const newRefreshToken =
                 await this.tokenService.persistRefreshToken(user);
 
             const refreshToken = this.tokenService.generateRefreshToken({
-                ...playload,
-                jwtid: newRefreshToken.id,
+                id: String(newRefreshToken.id),
+                ...payload,
             });
 
             res.cookie("accessToken", accessToken, {
@@ -171,5 +171,58 @@ export class AuthController {
           return userCopy; // RETURN UPDATED USER
         };
         return res.json(userData && userWithoutPassword(userData));
+    }
+
+    async refresh(req: AuthRequest, res: Response, next: NextFunction) {
+    
+        try {
+
+            const payload: JwtPayload = {
+                sub: String(req.auth.sub),
+                role: req.auth.role,
+            };
+
+            const user = await this.userService.findById(req.auth.sub);
+
+            this.logger.info("User has ben Refresh", { id: req.auth.sub });
+
+            if(!user) {
+                const err = createHttpError(404, "User not found");
+                return next(err);
+            }
+
+            const accessToken = this.tokenService.generateAccessToken(payload);
+
+            // presist refresh token
+            const newRefreshToken =
+                await this.tokenService.persistRefreshToken(user);
+
+             // delete old refresh token    
+             await this.tokenService.deleteRefreshToken(Number(req.auth.id));
+
+            const refreshToken = this.tokenService.generateRefreshToken({
+                id: String(newRefreshToken.id),
+                ...payload,
+            });
+
+            res.cookie("accessToken", accessToken, {
+                domain: "localhost",
+                sameSite: "strict",
+                maxAge: 1000 * 60 * 60, // 1h
+                httpOnly: true,
+                // secure: true,
+            });
+
+            res.cookie("refreshToken", refreshToken, {
+                domain: "localhost",
+                sameSite: "strict",
+                maxAge: 1000 * 60 * 60 * 24 * 365, // 1y
+                httpOnly: true,
+            });
+            res.json({ id: user.id});
+
+        } catch(err) { 
+            return next(err);
+        }
     }
 }
