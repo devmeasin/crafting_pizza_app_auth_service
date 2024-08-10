@@ -154,9 +154,8 @@ export class AuthController {
 
     async self(req: AuthRequest, res: Response) {
         const userData = await this.userService.findById(req.auth.sub);
-    
-        const userWithoutPassword = (userData: UserData) => {
 
+        const userWithoutPassword = (userData: UserData) => {
             interface UserDataX {
                 firstName: string;
                 lastName: string;
@@ -164,19 +163,17 @@ export class AuthController {
                 password?: string;
             }
 
-          const userCopy:UserDataX = { ...userData }; // CREATE A COPY OF THE OBJECT
-          if (userCopy.password) {
-            delete userCopy.password; // DELETE THE PASSWORD PROPERTY
-          }
-          return userCopy; // RETURN UPDATED USER
+            const userCopy: UserDataX = { ...userData }; // CREATE A COPY OF THE OBJECT
+            if (userCopy.password) {
+                delete userCopy.password; // DELETE THE PASSWORD PROPERTY
+            }
+            return userCopy; // RETURN UPDATED USER
         };
         return res.json(userData && userWithoutPassword(userData));
     }
 
     async refresh(req: AuthRequest, res: Response, next: NextFunction) {
-    
         try {
-
             const payload: JwtPayload = {
                 sub: String(req.auth.sub),
                 role: req.auth.role,
@@ -186,7 +183,7 @@ export class AuthController {
 
             this.logger.info("User has ben Refresh", { id: req.auth.sub });
 
-            if(!user) {
+            if (!user) {
                 const err = createHttpError(404, "User not found");
                 return next(err);
             }
@@ -197,8 +194,8 @@ export class AuthController {
             const newRefreshToken =
                 await this.tokenService.persistRefreshToken(user);
 
-             // delete old refresh token    
-             await this.tokenService.deleteRefreshToken(Number(req.auth.id));
+            // delete old refresh token
+            await this.tokenService.deleteRefreshToken(Number(req.auth.id));
 
             const refreshToken = this.tokenService.generateRefreshToken({
                 id: String(newRefreshToken.id),
@@ -219,9 +216,24 @@ export class AuthController {
                 maxAge: 1000 * 60 * 60 * 24 * 365, // 1y
                 httpOnly: true,
             });
-            res.json({ id: user.id});
+            res.json({ id: user.id });
+        } catch (err) {
+            return next(err);
+        }
+    }
 
-        } catch(err) { 
+    async logout(req: AuthRequest, res: Response, next: NextFunction) {
+        try {
+            await this.tokenService.deleteRefreshToken(Number(req.auth.id));
+            this.logger.info("Refresh token has been deleted", {
+                id: req.auth.id,
+            });
+            this.logger.info("User has been logged out", { id: req.auth.sub });
+
+            res.clearCookie("accessToken");
+            res.clearCookie("refreshToken");
+            res.json({});
+        } catch (err) {
             return next(err);
         }
     }

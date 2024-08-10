@@ -6,7 +6,7 @@ import logger from "../config/logger";
 import { RefreshToken } from "../entity/RefreshToken";
 import { AuthCookie, IRefreshTokenPayload } from "../types";
 
-export default expressjwt( {
+export default expressjwt({
     secret: Config.REFRESH_TOKEN_SECRET!,
     algorithms: ["HS256"],
 
@@ -17,9 +17,8 @@ export default expressjwt( {
 
     getToken: (req: Request) => (req.cookies as AuthCookie).refreshToken,
 
-    async isRevoked(req : Request,token) {
+    async isRevoked(req: Request, token) {
         try {
-            console.log(token)
             const refreshTokenRepo = AppDataSource.getRepository(RefreshToken);
 
             const refreshToken = await refreshTokenRepo.findOne({
@@ -29,12 +28,15 @@ export default expressjwt( {
                 },
             });
 
-            return  refreshToken === null;
+            return refreshToken === null;
         } catch (error) {
-            logger.error('error while validating refresh token', { refreshTokenId: Number((token?.payload as IRefreshTokenPayload).id) });
+            logger.error("error while validating refresh token", {
+                refreshTokenId: Number(
+                    (token?.payload as IRefreshTokenPayload).id,
+                ),
+            });
         }
 
-        return true
-    }
-    
-} )
+        return true;
+    },
+});

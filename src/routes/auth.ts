@@ -12,6 +12,7 @@ import resgisterValidator from "../validator/register-validator";
 import { AuthController } from "./../controllers/AuthController";
 import { UserService } from "./../services/UserService";
 import valiadateRefreshToken from "../middlewares/valiadateRefreshToken";
+import parseRefreshToken from "../middlewares/parseRefreshToken";
 
 const router = express.Router();
 
@@ -20,26 +21,48 @@ const refreshTokenRepository = AppDataSource.getRepository(RefreshToken);
 const userService = new UserService(userRepository);
 const tokenService = new TokenService(refreshTokenRepository);
 const credentialService = new CredentialService();
-const authController = new AuthController(userService, logger, tokenService, credentialService);
-
-// eslint-disable-next-line @typescript-eslint/no-misused-promises
-router.post("/register",resgisterValidator, (req : Request, res: Response, next: NextFunction) =>
-    authController.register(req, res, next)
+const authController = new AuthController(
+    userService,
+    logger,
+    tokenService,
+    credentialService,
 );
 
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
-router.post("/login",loginValidator, (req : Request, res: Response, next: NextFunction) =>
-    authController.login(req, res, next)
+router.post(
+    "/register",
+    resgisterValidator,
+    (req: Request, res: Response, next: NextFunction) =>
+        authController.register(req, res, next),
 );
 
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
-router.get("/self",authenticate, (req : Request, res: Response) =>
-    authController.self(req as AuthRequest, res)
+router.post(
+    "/login",
+    loginValidator,
+    (req: Request, res: Response, next: NextFunction) =>
+        authController.login(req, res, next),
 );
 
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
-router.post("/refresh",valiadateRefreshToken, (req : Request, res: Response, next: NextFunction) =>
-    authController.refresh(req as AuthRequest, res,next)
+router.get("/self", authenticate, (req: Request, res: Response) =>
+    authController.self(req as AuthRequest, res),
+);
+
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
+router.post(
+    "/refresh",
+    valiadateRefreshToken,
+    (req: Request, res: Response, next: NextFunction) =>
+        authController.refresh(req as AuthRequest, res, next),
+);
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
+router.post(
+    "/logout",
+    authenticate,
+    parseRefreshToken,
+    (req: Request, res: Response, next: NextFunction) =>
+        authController.logout(req as AuthRequest, res, next),
 );
 
 export default router;
